@@ -8,6 +8,13 @@
       "methods": ["post"]
     },
     {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "eventTable",
+      "direction": "out"
+    },
+    {
       "type": "http",
       "direction": "out",
       "name": "res"
