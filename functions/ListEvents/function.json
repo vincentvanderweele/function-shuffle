@@ -1,0 +1,25 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["get"]
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "eventTable",
+      "partitionKey": "events",
+      "direction": "in"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ],
+  "scriptFile": "../dist/ListEvents/index.js"
+}
