@@ -7,14 +7,18 @@
     "watch": "tsc -w",
     "prestart": "npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "jest --coverage"
   },
   "dependencies": {
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@azure/functions": "^1.2.3",
+    "@fluffy-spoon/substitute": "^1.208.0",
+    "@types/jest": "^27.4.0",
     "@types/uuid": "^8.3.4",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
     "typescript": "^4.0.0"
   }
 }

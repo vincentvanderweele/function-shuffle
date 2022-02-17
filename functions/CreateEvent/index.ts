@@ -3,7 +3,7 @@ import { AzureFunction, HttpRequest } from '@azure/functions';
 import { Event, EventRow, HttpContext } from '../common/types';
 import { parseEvent } from '../common/parsers';
 
-interface CreateEventContext extends HttpContext {
+export interface CreateEventContext extends HttpContext {
   bindings: {
     eventTable: EventRow[];
   };

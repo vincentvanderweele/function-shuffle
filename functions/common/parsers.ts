@@ -1,12 +1,16 @@
 import { Event } from './types';
 export function parseEvent(data: unknown): Event {
   if (!data || typeof data !== 'object') {
-    throw new Error('Data is not an object');
+    throw new Error('Event is not an object');
   }
 
   const event = data as Event;
   if (!event.name || typeof event.name !== 'string') {
     throw new Error('Invalid event name');
+  }
+
+  if (!event.dates || !Array.isArray(event.dates)) {
+    throw new Error('Invalid event dates');
   }
 
   return {
