@@ -32,3 +32,10 @@ module "function-app" {
 
   depends_on = [azurerm_resource_group.resource_group]
 }
+
+module "table" {
+  source                    = "./modules/table"
+  STORAGE_ACCOUNT_NAME      = azurerm_storage_account.storage_account.name
+
+  depends_on = [azurerm_storage_account.storage_account]
+}
