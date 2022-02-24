@@ -18,7 +18,7 @@
     {
       "type": "http",
       "direction": "out",
-      "name": "res"
+      "name": "httpResponse"
     }
   ],
   "scriptFile": "../dist/CreateEvent/index.js"

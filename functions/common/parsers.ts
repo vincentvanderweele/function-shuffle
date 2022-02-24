@@ -1,16 +1,18 @@
+import { ValidationError } from './httpHelpers';
 import { Event, Vote } from './types';
+
 export function parseEvent(data: unknown): Event {
   if (!data || typeof data !== 'object') {
-    throw new Error('Event is not an object');
+    throw new ValidationError('Event is not an object');
   }
 
   const event = data as Event;
   if (!event.name || typeof event.name !== 'string') {
-    throw new Error('Invalid event name');
+    throw new ValidationError('Invalid event name');
   }
 
   if (!event.dates || !Array.isArray(event.dates)) {
-    throw new Error('Invalid event dates');
+    throw new ValidationError('Invalid event dates');
   }
 
   return {
@@ -21,16 +23,16 @@ export function parseEvent(data: unknown): Event {
 
 export function parseVote(data: unknown): Vote {
   if (!data || typeof data !== 'object') {
-    throw new Error('Vote is not an object');
+    throw new ValidationError('Vote is not an object');
   }
 
   const vote = data as Vote;
   if (!vote.name || typeof vote.name !== 'string') {
-    throw new Error('Invalid voter name');
+    throw new ValidationError('Invalid voter name');
   }
 
   if (!vote.votes || !Array.isArray(vote.votes)) {
-    throw new Error('Invalid vote dates');
+    throw new ValidationError('Invalid vote dates');
   }
 
   return {
@@ -44,12 +46,12 @@ const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 export function parseDate(data: unknown): string {
   // completely wrong data
   if (typeof data !== 'string' || !dateRegex.test(data)) {
-    throw new Error('Invalid date format');
+    throw new ValidationError('Invalid date format');
   }
 
   // invalid date, for instance '2000-02-30'
   if (isNaN(Date.parse(data))) {
-    throw new Error('Invalid date');
+    throw new ValidationError('Invalid date');
   }
 
   return data;

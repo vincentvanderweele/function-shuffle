@@ -1,16 +1,18 @@
-import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { EventRow, HttpContext } from '../common/types';
+import { Context } from '@azure/functions';
+import { createSuccessResponse, HttpResponse } from '../common/httpHelpers';
+import { EventRow, EventWithName } from '../common/types';
 
-export interface ListEventsContext extends HttpContext {
+export type ListEventsResult = HttpResponse<EventWithName[]>;
+
+export interface ListEventsContext extends Context {
   bindings: {
     eventTable: EventRow[];
   };
 }
 
-const httpTrigger: AzureFunction = async function (
-  context: ListEventsContext,
-  req: HttpRequest
-): Promise<void> {
+const httpTrigger = async function (
+  context: ListEventsContext
+): Promise<ListEventsResult> {
   const eventRows = context.bindings.eventTable;
 
   context.log(eventRows);
@@ -22,10 +24,7 @@ const httpTrigger: AzureFunction = async function (
 
   context.log('List events', { events });
 
-  context.res = {
-    status: 200,
-    body: events,
-  };
+  return createSuccessResponse(events);
 };
 
 export default httpTrigger;

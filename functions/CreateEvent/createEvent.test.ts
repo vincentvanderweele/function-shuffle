@@ -1,77 +1,80 @@
-import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute';
+import { Context, HttpRequest } from '@azure/functions';
+import Substitute, { SubstituteOf } from '@fluffy-spoon/substitute';
 
 // must be imported before '.'
 import uuidMock from '../common/uuidMock';
 
-import httpTrigger, { CreateEventContext } from '.';
+import httpTrigger, { CreateEventResult } from '.';
 import { datesToString } from '../common/parsers';
 
 describe('createEvent', () => {
-  let contextMock: SubstituteOf<CreateEventContext>;
-  let bindingsMock: SubstituteOf<CreateEventContext['bindings']>;
+  let contextMock: SubstituteOf<Context>;
 
   beforeEach(() => {
-    contextMock = Substitute.for<CreateEventContext>();
-    bindingsMock = Substitute.for<CreateEventContext['bindings']>();
-
-    contextMock.bindings.returns(bindingsMock);
+    contextMock = Substitute.for<Context>();
   });
 
   describe('when the input is valid', () => {
-    const request = {
-      body: {
-        name: "Jake's secret party",
-        dates: ['2014-01-01', '2014-01-05', '2014-01-12'],
-      },
+    const requestBody = {
+      name: "Jake's secret party",
+      dates: ['2014-01-01', '2014-01-05', '2014-01-12'],
     };
 
+    let result: CreateEventResult;
+
     beforeEach(async () => {
-      await httpTrigger(contextMock, request);
+      const request = Substitute.for<HttpRequest>();
+      request.body.returns(requestBody);
+
+      result = await httpTrigger(contextMock, request);
     });
 
     it('creates a table entry', () => {
-      bindingsMock.received().eventTable = [
+      expect(result.eventTable).toEqual([
         {
           PartitionKey: 'events',
           RowKey: uuidMock.getLastGeneratedUUID(),
-          Name: request.body.name,
-          Dates: datesToString(request.body.dates),
+          Name: requestBody.name,
+          Dates: datesToString(requestBody.dates),
         },
-      ];
+      ]);
     });
 
     it('returns the event id', () => {
-      contextMock.received().res = {
+      expect(result.httpResponse).toEqual({
         status: 200,
         body: {
           id: uuidMock.getLastGeneratedUUID(),
         },
-      };
+      });
     });
   });
 
   describe('when the input is invalid', () => {
-    const request = {
-      body: {
-        name: "Jake's secret party without dates",
-      },
+    const requestBody = {
+      name: "Jake's secret party without dates",
     };
 
+    let result: CreateEventResult;
+
     beforeEach(async () => {
-      await httpTrigger(contextMock, request);
+      const request = Substitute.for<HttpRequest>();
+      request.body.returns(requestBody);
+
+      result = await httpTrigger(contextMock, request);
     });
 
     it('creates no table entry', async () => {
-      bindingsMock.didNotReceive().eventTable = Arg.any();
+      expect(result.eventTable).toBeUndefined();
     });
 
     it('returns an error message', async () => {
-      contextMock.received().res = {
+      expect(result.httpResponse).toEqual({
         status: 400,
         body: {
           details: 'Invalid event dates',
         },
-      };
+      });
     });
   });
 });

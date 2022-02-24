@@ -28,9 +28,9 @@ describe('listEvents', () => {
       },
     ]);
 
-    await httpTrigger(contextMock);
+    const result = await httpTrigger(contextMock);
 
-    contextMock.received().res = {
+    expect(result.httpResponse).toEqual({
       status: 200,
       body: [
         {
@@ -42,17 +42,17 @@ describe('listEvents', () => {
           name: 'Name 2',
         },
       ],
-    };
+    });
   });
 
   it('returns an empty array when the table is empty', async () => {
     bindingsMock.eventTable.returns([]);
 
-    await httpTrigger(contextMock);
+    const result = await httpTrigger(contextMock);
 
-    contextMock.received().res = {
+    expect(result.httpResponse).toEqual({
       status: 200,
       body: [],
-    };
+    });
   });
 });

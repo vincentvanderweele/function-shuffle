@@ -1,18 +1,22 @@
 import * as uuid from 'uuid';
-import { AzureFunction, HttpRequest } from '@azure/functions';
-import { Event, EventRow, HttpContext } from '../common/types';
+import { Context, HttpRequest } from '@azure/functions';
+import { Event, EventId, EventRow } from '../common/types';
 import { datesToString, parseEvent } from '../common/parsers';
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  HttpResponse,
+} from '../common/httpHelpers';
 
-export interface CreateEventContext extends HttpContext {
-  bindings: {
-    eventTable: EventRow[];
-  };
-}
+export type CreateEventResult = HttpResponse<
+  EventId,
+  { eventTable?: EventRow[] }
+>;
 
-const httpTrigger: AzureFunction = async function (
-  context: CreateEventContext,
+const httpTrigger = async function (
+  context: Context,
   req: HttpRequest
-): Promise<void> {
+): Promise<CreateEventResult> {
   context.log('Create event', { body: req.body });
 
   let event: Event;
@@ -24,30 +28,26 @@ const httpTrigger: AzureFunction = async function (
 
     context.log('Failed to parse event', { errorMessage });
 
-    context.res = {
-      status: 400,
-      body: { ...(errorMessage ? { details: errorMessage } : {}) },
-    };
-    return;
+    return createErrorResponse(error);
   }
 
-  const eventRow: EventRow = {
-    PartitionKey: 'events',
-    RowKey: uuid.v4(),
-    Name: event.name,
-    Dates: datesToString(event.dates),
-  };
+  const eventId = uuid.v4();
 
-  context.bindings.eventTable = [eventRow];
+  context.log('Creating event row', { eventId });
 
-  context.log('Event row created', { eventRow });
-
-  context.res = {
-    status: 200,
-    body: {
-      id: eventRow.RowKey,
-    },
-  };
+  return createSuccessResponse(
+    { id: eventId },
+    {
+      eventTable: [
+        {
+          PartitionKey: 'events',
+          RowKey: eventId,
+          Name: event.name,
+          Dates: datesToString(event.dates),
+        },
+      ],
+    }
+  );
 };
 
 export default httpTrigger;

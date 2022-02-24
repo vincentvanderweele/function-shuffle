@@ -10,6 +10,15 @@ export interface Vote {
   votes: string[];
 }
 
+export interface EventId {
+  id: string;
+}
+
+export interface EventWithName {
+  id: string;
+  name: string;
+}
+
 export interface EventWithVotes {
   id: string;
   name: string;
@@ -41,3 +50,13 @@ export interface HttpContext extends Context {
     body: {};
   };
 }
+
+export type HttpResult<SuccessData> =
+  | {
+      status: 200;
+      body: SuccessData;
+    }
+  | {
+      status: number;
+      body: { details?: string };
+    };

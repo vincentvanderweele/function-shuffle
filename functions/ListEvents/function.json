@@ -19,7 +19,7 @@
     {
       "type": "http",
       "direction": "out",
-      "name": "res"
+      "name": "httpResponse"
     }
   ],
   "scriptFile": "../dist/ListEvents/index.js"

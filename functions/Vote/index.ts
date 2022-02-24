@@ -1,40 +1,38 @@
 import * as uuid from 'uuid';
-import { AzureFunction, HttpRequest } from '@azure/functions';
+import { Context, HttpRequest } from '@azure/functions';
 import { datesFromString, datesToString, parseVote } from '../common/parsers';
+import { EventRow, EventWithVotes, Vote, VoteRow } from '../common/types';
 import {
-  EventRow,
-  EventWithVotes,
-  HttpContext,
-  Vote,
-  VoteRow,
-} from '../common/types';
+  createErrorResponse,
+  createSuccessResponse,
+  HttpResponse,
+  NotFoundError,
+  ValidationError,
+} from '../common/httpHelpers';
 
-export interface VoteContext extends HttpContext {
+export type VoteResult = HttpResponse<
+  EventWithVotes,
+  { voteTable?: VoteRow[] }
+>;
+
+export interface VoteContext extends Context {
   bindings: {
     event: EventRow | undefined;
     eventVotes: VoteRow[];
-    voteTable: VoteRow[];
   };
 }
 
-const httpTrigger: AzureFunction = async function (
+const httpTrigger = async function (
   context: VoteContext,
   req: HttpRequest
-): Promise<void> {
+): Promise<VoteResult> {
   const { eventId } = req.params;
   const { event, eventVotes } = context.bindings;
 
   context.log('Create vote', { eventId, body: req.body });
 
   if (!eventId || !event) {
-    context.res = {
-      status: 404,
-      body: {
-        details: 'Event does not exist',
-      },
-    };
-
-    return;
+    return createErrorResponse(new NotFoundError('Event does not exist'));
   }
 
   let vote: Vote;
@@ -46,11 +44,7 @@ const httpTrigger: AzureFunction = async function (
 
     context.log('Failed to parse vote', { errorMessage });
 
-    context.res = {
-      status: 400,
-      body: { ...(errorMessage ? { details: errorMessage } : {}) },
-    };
-    return;
+    return createErrorResponse(error);
   }
 
   const eventDates = datesFromString(event.Dates);
@@ -59,11 +53,9 @@ const httpTrigger: AzureFunction = async function (
   if (invalidDates.length) {
     context.log('Vote contains invalid dates', { invalidDates });
 
-    context.res = {
-      status: 400,
-      body: { details: `Invalid dates: ${invalidDates.join(', ')}` },
-    };
-    return;
+    return createErrorResponse(
+      new ValidationError(`Invalid dates: ${invalidDates.join(', ')}`)
+    );
   }
 
   const voteRow: VoteRow = {
@@ -73,14 +65,12 @@ const httpTrigger: AzureFunction = async function (
     Votes: datesToString(vote.votes),
   };
 
-  context.bindings.voteTable = [voteRow];
-
   context.log('Vote row created', { voteRow });
 
-  context.res = {
-    status: 200,
-    body: createEventWithVotes(event, [...eventVotes, voteRow]),
-  };
+  return createSuccessResponse(
+    createEventWithVotes(event, [...eventVotes, voteRow]),
+    { voteTable: [voteRow] }
+  );
 };
 
 export default httpTrigger;

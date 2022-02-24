@@ -1,11 +1,12 @@
-import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute';
+import { HttpRequest } from '@azure/functions';
+import Substitute, { SubstituteOf } from '@fluffy-spoon/substitute';
 
 // must be imported before '.'
 import uuidMock from '../common/uuidMock';
 
-import httpTrigger, { VoteContext } from '.';
-import { EventRow } from '../common/types';
+import httpTrigger, { VoteContext, VoteResult } from '.';
 import { datesToString } from '../common/parsers';
+import { EventRow } from '../common/types';
 
 describe('createEvent', () => {
   const eventId = 'a3dafe57-c103-4984-b3dd-20995f27f785';
@@ -27,15 +28,21 @@ describe('createEvent', () => {
   });
 
   describe('when the input is valid', () => {
-    const request = {
-      body: {
-        name: 'Dick',
-        votes: ['2014-01-01', '2014-01-05'],
-      },
-      params: { eventId },
+    const requestBody = {
+      name: 'Dick',
+      votes: ['2014-01-01', '2014-01-05'],
     };
+    let request: SubstituteOf<HttpRequest>;
+
+    beforeEach(() => {
+      request = Substitute.for<HttpRequest>();
+      request.body.returns(requestBody);
+      request.params.returns({ eventId });
+    });
 
     describe('when the event exists and there are existing votes', () => {
+      let result: VoteResult;
+
       beforeEach(async () => {
         bindingsMock.event.returns({
           PartitionKey: 'events',
@@ -52,22 +59,22 @@ describe('createEvent', () => {
           }))
         );
 
-        await httpTrigger(contextMock, request);
+        result = await httpTrigger(contextMock, request);
       });
 
       it('creates a table entry', () => {
-        bindingsMock.received().voteTable = [
+        expect(result.voteTable).toEqual([
           {
             PartitionKey: `vote_${eventId}`,
             RowKey: uuidMock.getLastGeneratedUUID(),
-            Name: request.body.name,
-            Votes: datesToString(request.body.votes),
+            Name: requestBody.name,
+            Votes: datesToString(requestBody.votes),
           },
-        ];
+        ]);
       });
 
       it('returns the event with all votes', () => {
-        contextMock.received().res = {
+        expect(result.httpResponse).toEqual({
           status: 200,
           body: {
             id: eventId,
@@ -84,31 +91,33 @@ describe('createEvent', () => {
               },
             ],
           },
-        };
+        });
       });
     });
 
     describe('when the event exists and there are no votes yet', () => {
+      let result: VoteResult;
+
       beforeEach(async () => {
         bindingsMock.event.returns(event);
         bindingsMock.eventVotes.returns([]);
 
-        await httpTrigger(contextMock, request);
+        result = await httpTrigger(contextMock, request);
       });
 
       it('creates a table entry', () => {
-        bindingsMock.received().voteTable = [
+        expect(result.voteTable).toEqual([
           {
             PartitionKey: `vote_${eventId}`,
             RowKey: uuidMock.getLastGeneratedUUID(),
             Name: request.body.name,
             Votes: datesToString(request.body.votes),
           },
-        ];
+        ]);
       });
 
       it('returns the event with all votes', () => {
-        contextMock.received().res = {
+        expect(result.httpResponse).toEqual({
           status: 200,
           body: {
             id: eventId,
@@ -125,58 +134,59 @@ describe('createEvent', () => {
               },
             ],
           },
-        };
+        });
       });
     });
 
     describe('when the event does not exist', () => {
+      let result: VoteResult;
+
       beforeEach(async () => {
         bindingsMock.event.returns(undefined);
         bindingsMock.eventVotes.returns([]);
 
-        await httpTrigger(contextMock, request);
+        result = await httpTrigger(contextMock, request);
       });
 
       it('creates no table entry', async () => {
-        bindingsMock.didNotReceive().voteTable = Arg.any();
+        expect(result.voteTable).toBeUndefined();
       });
 
       it('returns an error message', async () => {
-        contextMock.received().res = {
+        expect(result.httpResponse).toEqual({
           status: 404,
           body: {
             details: 'Event does not exist',
           },
-        };
+        });
       });
     });
   });
 
   describe('when the input is invalid', () => {
-    const request = {
-      body: {
-        name: 'Dick',
-      },
-      params: { eventId },
-    };
+    let result: VoteResult;
 
     beforeEach(async () => {
       bindingsMock.event.returns(event);
 
-      await httpTrigger(contextMock, request);
+      const request = Substitute.for<HttpRequest>();
+      request.body.returns({ name: 'Dick' });
+      request.params.returns({ eventId });
+
+      result = await httpTrigger(contextMock, request);
     });
 
     it('creates no table entry', async () => {
-      bindingsMock.didNotReceive().voteTable = Arg.any();
+      expect(result.voteTable).toBeUndefined();
     });
 
     it('returns an error message', async () => {
-      contextMock.received().res = {
+      expect(result.httpResponse).toEqual({
         status: 400,
         body: {
           details: 'Invalid vote dates',
         },
-      };
+      });
     });
   });
 });
