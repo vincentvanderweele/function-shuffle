@@ -1,0 +1,42 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "v1/event/{eventId}/vote"
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "event",
+      "partitionKey": "events",
+      "rowKey": "{eventId}",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "eventVotes",
+      "partitionKey": "vote_{eventId}",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "voteTable",
+      "direction": "out"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ],
+  "scriptFile": "../dist/Vote/index.js"
+}

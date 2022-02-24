@@ -1,4 +1,4 @@
-import { Event } from './types';
+import { Event, Vote } from './types';
 export function parseEvent(data: unknown): Event {
   if (!data || typeof data !== 'object') {
     throw new Error('Event is not an object');
@@ -16,6 +16,26 @@ export function parseEvent(data: unknown): Event {
   return {
     name: event.name,
     dates: event.dates.map(parseDate),
+  };
+}
+
+export function parseVote(data: unknown): Vote {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Vote is not an object');
+  }
+
+  const vote = data as Vote;
+  if (!vote.name || typeof vote.name !== 'string') {
+    throw new Error('Invalid voter name');
+  }
+
+  if (!vote.votes || !Array.isArray(vote.votes)) {
+    throw new Error('Invalid vote dates');
+  }
+
+  return {
+    name: vote.name,
+    votes: vote.votes.map(parseDate),
   };
 }
 
