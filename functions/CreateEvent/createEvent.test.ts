@@ -1,10 +1,10 @@
-// mock uuid generation before it gets imported
-const uuid = 'a3dafe57-c103-4984-b3dd-20995f27f785';
-jest.mock('uuid', () => ({ v4: () => uuid }));
-
 import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute';
+
+// must be imported before '.'
+import uuidMock from '../common/uuidMock';
+
 import httpTrigger, { CreateEventContext } from '.';
-import { EventRow } from '../common/types';
+import { datesToString } from '../common/parsers';
 
 describe('createEvent', () => {
   let contextMock: SubstituteOf<CreateEventContext>;
@@ -33,9 +33,9 @@ describe('createEvent', () => {
       bindingsMock.received().eventTable = [
         {
           PartitionKey: 'events',
-          RowKey: uuid,
+          RowKey: uuidMock.getLastGeneratedUUID(),
           Name: request.body.name,
-          Dates: request.body.dates.join(','),
+          Dates: datesToString(request.body.dates),
         },
       ];
     });
@@ -44,7 +44,7 @@ describe('createEvent', () => {
       contextMock.received().res = {
         status: 200,
         body: {
-          id: uuid,
+          id: uuidMock.getLastGeneratedUUID(),
         },
       };
     });

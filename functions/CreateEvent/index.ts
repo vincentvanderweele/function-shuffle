@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 import { AzureFunction, HttpRequest } from '@azure/functions';
 import { Event, EventRow, HttpContext } from '../common/types';
-import { parseEvent } from '../common/parsers';
+import { datesToString, parseEvent } from '../common/parsers';
 
 export interface CreateEventContext extends HttpContext {
   bindings: {
@@ -35,7 +35,7 @@ const httpTrigger: AzureFunction = async function (
     PartitionKey: 'events',
     RowKey: uuid.v4(),
     Name: event.name,
-    Dates: event.dates.join(','),
+    Dates: datesToString(event.dates),
   };
 
   context.bindings.eventTable = [eventRow];

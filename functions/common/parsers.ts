@@ -34,3 +34,11 @@ export function parseDate(data: unknown): string {
 
   return data;
 }
+
+export function datesToString(dates: string[]): string {
+  return dates.join(',');
+}
+
+export function datesFromString(dates: string): string[] {
+  return dates.split(',');
+}
