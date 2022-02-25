@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "v1/event/{eventId}/vote"
+      "route": "v1/event/{eventId:guid}/vote"
     },
     {
       "type": "table",
