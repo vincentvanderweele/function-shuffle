@@ -1,0 +1,35 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["get"],
+      "route": "v1/event/{eventId:guid}/results"
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "event",
+      "partitionKey": "events",
+      "rowKey": "{eventId}",
+      "direction": "in"
+    },
+    {
+      "type": "table",
+      "connection": "TABLE_STORAGE_CONNECTION",
+      "tableName": "functionshuffletable",
+      "name": "eventVotes",
+      "partitionKey": "vote_{eventId}",
+      "direction": "in"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "httpResponse"
+    }
+  ],
+  "scriptFile": "../dist/GetEventResults/index.js"
+}

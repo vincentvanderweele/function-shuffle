@@ -1,16 +1,16 @@
 import { Context, HttpRequest } from '@azure/functions';
-import { createEventWithVotes } from '../common/eventHelpers';
+import { createEventWithResults } from '../common/eventHelpers';
 import {
   createErrorResponse,
   createSuccessResponse,
   HttpResponse,
   NotFoundError,
 } from '../common/httpHelpers';
-import { EventWithVotes, EventRow, VoteRow } from '../common/types';
+import { EventRow, EventWithResults, VoteRow } from '../common/types';
 
-export type GetEventResult = HttpResponse<EventWithVotes>;
+export type GetEventResultsResult = HttpResponse<EventWithResults>;
 
-export interface GetEventContext extends Context {
+export interface GetEventResultsContext extends Context {
   bindings: {
     event: EventRow | undefined;
     eventVotes: VoteRow[];
@@ -18,19 +18,19 @@ export interface GetEventContext extends Context {
 }
 
 const httpTrigger = async function (
-  context: GetEventContext,
+  context: GetEventResultsContext,
   req: HttpRequest
-): Promise<GetEventResult> {
+): Promise<GetEventResultsResult> {
   const { eventId } = req.params;
   const { event, eventVotes } = context.bindings;
 
-  context.log('Get event', { eventId });
+  context.log('Get event results', { eventId });
 
   if (!eventId || !event) {
     return createErrorResponse(new NotFoundError('Event does not exist'));
   }
 
-  return createSuccessResponse(createEventWithVotes(event, eventVotes));
+  return createSuccessResponse(createEventWithResults(event, eventVotes));
 };
 
 export default httpTrigger;

@@ -1,6 +1,6 @@
 import { Context, HttpRequest } from '@azure/functions';
 import * as uuid from 'uuid';
-import { createEventWithVotes } from '../common/eventWithVotes';
+import { createEventWithVotes } from '../common/eventHelpers';
 import {
   createErrorResponse,
   createSuccessResponse,

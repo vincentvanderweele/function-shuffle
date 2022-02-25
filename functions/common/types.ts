@@ -25,6 +25,13 @@ export interface EventWithVotes extends Event {
   }>;
 }
 
+export interface EventWithResults extends Event {
+  suitableDates: Array<{
+    date: string;
+    people: string[];
+  }>;
+}
+
 export interface TableRow {
   PartitionKey: string;
   RowKey: string;
