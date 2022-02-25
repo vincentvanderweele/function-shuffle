@@ -1,27 +1,23 @@
 import { Context } from '@azure/functions';
 
-export interface Event {
+export interface EventCreate {
   name: string;
   dates: string[];
 }
 
-export interface Vote {
+export interface VoteCreate {
   name: string;
   votes: string[];
 }
 
-export interface EventId {
-  id: string;
-}
-
-export interface EventWithName {
+export interface Event {
   id: string;
   name: string;
 }
 
-export interface EventWithVotes {
-  id: string;
-  name: string;
+export type EventId = Pick<Event, 'id'>;
+
+export interface EventWithVotes extends Event {
   dates: string[];
   votes: Array<{
     date: string;
@@ -50,13 +46,3 @@ export interface HttpContext extends Context {
     body: {};
   };
 }
-
-export type HttpResult<SuccessData> =
-  | {
-      status: 200;
-      body: SuccessData;
-    }
-  | {
-      status: number;
-      body: { details?: string };
-    };

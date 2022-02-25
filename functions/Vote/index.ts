@@ -9,7 +9,7 @@ import {
   ValidationError,
 } from '../common/httpHelpers';
 import { datesFromString, datesToString, parseVote } from '../common/parsers';
-import { EventRow, EventWithVotes, Vote, VoteRow } from '../common/types';
+import { EventRow, EventWithVotes, VoteCreate, VoteRow } from '../common/types';
 
 export type VoteResult = HttpResponse<
   EventWithVotes,
@@ -36,7 +36,7 @@ const httpTrigger = async function (
     return createErrorResponse(new NotFoundError('Event does not exist'));
   }
 
-  let vote: Vote;
+  let vote: VoteCreate;
 
   try {
     vote = parseVote(req.body);

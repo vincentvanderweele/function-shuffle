@@ -1,8 +1,8 @@
 import { Context } from '@azure/functions';
 import { createSuccessResponse, HttpResponse } from '../common/httpHelpers';
-import { EventRow, EventWithName } from '../common/types';
+import { Event, EventRow } from '../common/types';
 
-export type ListEventsResult = HttpResponse<EventWithName[]>;
+export type ListEventsResult = HttpResponse<Event[]>;
 
 export interface ListEventsContext extends Context {
   bindings: {

@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import { Context, HttpRequest } from '@azure/functions';
-import { Event, EventId, EventRow } from '../common/types';
+import { EventCreate, EventId, EventRow } from '../common/types';
 import { datesToString, parseEvent } from '../common/parsers';
 import {
   createErrorResponse,
@@ -19,7 +19,7 @@ const httpTrigger = async function (
 ): Promise<CreateEventResult> {
   context.log('Create event', { body: req.body });
 
-  let event: Event;
+  let event: EventCreate;
 
   try {
     event = parseEvent(req.body);

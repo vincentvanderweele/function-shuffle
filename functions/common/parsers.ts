@@ -1,12 +1,12 @@
 import { ValidationError } from './httpHelpers';
-import { Event, Vote } from './types';
+import { EventCreate, VoteCreate } from './types';
 
-export function parseEvent(data: unknown): Event {
+export function parseEvent(data: unknown): EventCreate {
   if (!data || typeof data !== 'object') {
     throw new ValidationError('Event is not an object');
   }
 
-  const event = data as Event;
+  const event = data as EventCreate;
   if (!event.name || typeof event.name !== 'string') {
     throw new ValidationError('Invalid event name');
   }
@@ -21,12 +21,12 @@ export function parseEvent(data: unknown): Event {
   };
 }
 
-export function parseVote(data: unknown): Vote {
+export function parseVote(data: unknown): VoteCreate {
   if (!data || typeof data !== 'object') {
     throw new ValidationError('Vote is not an object');
   }
 
-  const vote = data as Vote;
+  const vote = data as VoteCreate;
   if (!vote.name || typeof vote.name !== 'string') {
     throw new ValidationError('Invalid voter name');
   }
