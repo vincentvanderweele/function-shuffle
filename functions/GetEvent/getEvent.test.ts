@@ -39,7 +39,7 @@ describe('getEvent', () => {
         Dates: '2014-01-01,2014-01-05,2014-01-12',
       });
       bindingsMock.eventVotes.returns([
-        ...['John', 'Julia', 'Paul', 'Daisy', 'Dick'].map((name) => ({
+        ...['John', 'Julia', 'Paul', 'Daisy'].map((name) => ({
           PartitionKey: `vote_${eventId}`,
           RowKey: '',
           Name: name,
@@ -49,7 +49,7 @@ describe('getEvent', () => {
           PartitionKey: `vote_${eventId}`,
           RowKey: '',
           Name: 'Dick',
-          Votes: '2014-01-05',
+          Votes: datesToString(['2014-01-01', '2014-01-05']),
         },
       ]);
 
