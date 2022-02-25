@@ -1,7 +1,6 @@
-import * as uuid from 'uuid';
 import { Context, HttpRequest } from '@azure/functions';
-import { datesFromString, datesToString, parseVote } from '../common/parsers';
-import { EventRow, EventWithVotes, Vote, VoteRow } from '../common/types';
+import * as uuid from 'uuid';
+import { createEventWithVotes } from '../common/eventWithVotes';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -9,6 +8,8 @@ import {
   NotFoundError,
   ValidationError,
 } from '../common/httpHelpers';
+import { datesFromString, datesToString, parseVote } from '../common/parsers';
+import { EventRow, EventWithVotes, Vote, VoteRow } from '../common/types';
 
 export type VoteResult = HttpResponse<
   EventWithVotes,
@@ -74,27 +75,3 @@ const httpTrigger = async function (
 };
 
 export default httpTrigger;
-
-function createEventWithVotes(
-  event: EventRow,
-  votes: VoteRow[]
-): EventWithVotes {
-  // build a dictionary of people voting for each day
-  const voteMap = votes.reduce((voteMap, vote) => {
-    for (const date of datesFromString(vote.Votes)) {
-      (voteMap[date] ?? (voteMap[date] = [])).push(vote.Name);
-    }
-
-    return voteMap;
-  }, {} as Record<string, string[]>);
-
-  return {
-    id: event.RowKey,
-    name: event.Name,
-    dates: datesFromString(event.Dates),
-    // turn the dictionary in a list of objects and sort by date
-    votes: Object.entries(voteMap)
-      .map(([date, people]) => ({ date, people }))
-      .sort((a, b) => a.date.localeCompare(b.date)),
-  };
-}
